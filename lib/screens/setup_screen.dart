@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/auth_service.dart';
 import 'dashboard_screen.dart';
 
@@ -59,6 +60,12 @@ class _SetupScreenState extends State<SetupScreen> {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
+            SvgPicture.asset(
+              'assets/images/logo.svg',
+              width: 80,
+              height: 80,
+            ),
+            const SizedBox(height: 20),
             const Text(
               'Create a Master Password',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

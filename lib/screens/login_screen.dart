@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/auth_service.dart';
 import 'dashboard_screen.dart';
 
@@ -74,7 +75,11 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.security, size: 60, color: Colors.blue),
+            SvgPicture.asset(
+              'assets/images/logo.svg',
+              width: 100,
+              height: 100,
+            ),
             const SizedBox(height: 20),
             const Text(
               'Unlock SecureVault',

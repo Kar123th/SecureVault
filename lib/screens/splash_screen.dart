@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'setup_screen.dart';
@@ -42,18 +43,22 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueAccent,
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.lock, size: 80, color: Colors.white),
-            SizedBox(height: 20),
-            Text(
+          children: [
+            SvgPicture.asset(
+              'assets/images/logo.svg',
+              width: 150,
+              height: 150,
+            ),
+            const SizedBox(height: 24),
+            const Text(
               'SecureVault',
               style: TextStyle(
-                color: Colors.white,
-                fontSize: 28,
+                color: Colors.blueAccent,
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
               ),
             ),
