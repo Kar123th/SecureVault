@@ -50,10 +50,15 @@ class AuthService {
     }
   }
 
-  Future<bool> enableBiometric(String password) async {
-    // Store password securely for biometric use
-    await _storage.write(key: 'master_password', value: password);
-    await _storage.write(key: 'biometric_enabled', value: 'true');
+  Future<bool> setBiometricEnabled(bool enabled, String? password) async {
+    if (enabled) {
+      if (password == null) return false;
+      await _storage.write(key: 'master_password', value: password);
+      await _storage.write(key: 'biometric_enabled', value: 'true');
+    } else {
+      await _storage.delete(key: 'biometric_enabled');
+      await _storage.delete(key: 'master_password');
+    }
     return true;
   }
   

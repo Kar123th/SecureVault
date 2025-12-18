@@ -3,7 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart'; // Import animations
 import 'package:secure_vault/screens/login_screen.dart';
 import 'package:secure_vault/screens/search_screen.dart'; // Import Search
 import 'package:secure_vault/screens/scanner_screen.dart'; // Import Scanner
-import 'package:secure_vault/screens/setup_screen.dart'; // Reusing setup as settings for demo
+import 'package:secure_vault/screens/settings_screen.dart'; // New Settings Screen
+import 'package:secure_vault/screens/setup_screen.dart';
 
 // Module Imports 
 import 'package:secure_vault/screens/modules/medical_records_screen.dart';
@@ -62,12 +63,11 @@ class DashboardScreen extends StatelessWidget {
               if (value == 'logout') {
                  Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (r) => false);
               } else if (value == 'settings') {
-                 // Open setup as rudimentary settings to reset password
-                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SetupScreen())); 
+                 Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())); 
               }
             },
             itemBuilder: (_) => [
-              const PopupMenuItem(value: 'settings', child: Text('Settings (Reset Pwd)')),
+              const PopupMenuItem(value: 'settings', child: Text('Settings')),
               const PopupMenuItem(value: 'logout', child: Text('Logout')),
             ],
           ),
