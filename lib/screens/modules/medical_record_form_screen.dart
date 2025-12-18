@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../services/database_service.dart';
 import '../../models/medical_record_model.dart';
+import '../../services/file_service.dart'; // Added
 import 'medical_records_screen.dart'; // Navigation back
 
 class MedicalRecordFormScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
   
   String _selectedType = 'prescription';
   DateTime _selectedDate = DateTime.now();
+  String? _filePath; // Added
   bool _isSaving = false;
 
   @override
@@ -33,6 +35,7 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
     if (widget.record != null) {
       _selectedType = widget.record!.recordType;
       _selectedDate = widget.record!.date;
+      _filePath = widget.record!.filePath; // Added
     }
   }
 
@@ -58,31 +61,32 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
     }
   }
 
+  Future<void> _pickFile() async {
+    final path = await FileService().pickAndEncryptFile();
+    if (path != null) setState(() => _filePath = path);
+  }
+
   Future<void> _saveRecord() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSaving = true);
 
-    // Prepare data
-    // In a real app, user_id should come from auth provider
     final newRecord = MedicalRecord(
-      id: widget.record?.id, // Keep ID if editing
+      id: widget.record?.id, 
       userId: 1, 
       title: _titleController.text,
       recordType: _selectedType,
       date: _selectedDate,
       doctorName: _doctorController.text,
       notes: _notesController.text,
-      // file_path will be handled in Phase 5
+      filePath: _filePath, // Added
     );
 
     final db = await DatabaseService.instance.database;
 
     if (widget.record == null) {
-      // Create New
       await db.insert('medical_records', newRecord.toJson());
     } else {
-      // Update Existing
       await db.update(
         'medical_records',
         newRecord.toJson(),
@@ -93,7 +97,7 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
 
     if (mounted) {
       setState(() => _isSaving = false);
-      Navigator.pop(context, true); // Return true to trigger refresh
+      Navigator.pop(context, true);
     }
   }
 
@@ -173,6 +177,23 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
                   prefixIcon: Icon(Icons.notes),
                 ),
                 maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+
+              if (_filePath != null) ...[
+                 const Text('Attachment Linked (Encrypted)', style: TextStyle(color: Colors.green)),
+                 TextButton.icon(
+                   onPressed: () async {
+                     await FileService().openDecryptedFile(_filePath!);
+                   }, 
+                   icon: const Icon(Icons.remove_red_eye),
+                   label: const Text('View Current File')
+                 )
+              ],
+              OutlinedButton.icon(
+                onPressed: _pickFile,
+                icon: const Icon(Icons.attach_file),
+                label: Text(_filePath == null ? 'Attach Document' : 'Change Document'),
               ),
               const SizedBox(height: 24),
 

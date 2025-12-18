@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/medical_record_model.dart';
+import '../../services/file_service.dart';
 import 'medical_record_form_screen.dart';
 
 class MedicalRecordDetailScreen extends StatelessWidget {
@@ -57,11 +58,8 @@ class MedicalRecordDetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
             if (record.filePath != null && record.filePath!.isNotEmpty)
               ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Implement file viewing
-                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('File viewing coming in Phase 5')),
-                  );
+                onPressed: () async {
+                  await FileService().openDecryptedFile(record.filePath!);
                 },
                 icon: const Icon(Icons.attach_file),
                 label: const Text('View Attachment'),

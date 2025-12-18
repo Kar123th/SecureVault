@@ -171,8 +171,7 @@ class _PersonalDocFormState extends State<_PersonalDocForm> {
                  const Text('File Attached (Encrypted)', style: TextStyle(color: Colors.green)),
                  TextButton(
                    onPressed: () async {
-                     await FileService().decryptFile(_filePath!);
-                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('File decrypted to temp folder')));
+                     await FileService().openDecryptedFile(_filePath!);
                    }, 
                    child: const Text('View File')
                  )

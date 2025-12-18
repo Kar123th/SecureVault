@@ -169,8 +169,7 @@ class _VehicleFormState extends State<_VehicleForm> {
                  const Text('Document Attached', style: TextStyle(color: Colors.green)),
                  TextButton(
                    onPressed: () async {
-                     await FileService().decryptFile(_filePath!);
-                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('File decrypted')));
+                     await FileService().openDecryptedFile(_filePath!);
                    }, 
                    child: const Text('View')
                  )

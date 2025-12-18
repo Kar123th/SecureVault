@@ -169,6 +169,15 @@ class _HomeFormState extends State<_HomeForm> {
                 },
               ),
               const SizedBox(height: 16),
+              if (_filePath != null) ...[
+                 const Text('Document Attached', style: TextStyle(color: Colors.green)),
+                 TextButton(
+                   onPressed: () async {
+                     await FileService().openDecryptedFile(_filePath!);
+                   }, 
+                   child: const Text('View Bill/Warranty')
+                 )
+              ],
               OutlinedButton.icon(
                 onPressed: _pickFile,
                 icon: const Icon(Icons.attach_file),

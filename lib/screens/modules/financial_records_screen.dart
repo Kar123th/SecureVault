@@ -157,6 +157,15 @@ class _FinancialFormState extends State<_FinancialForm> {
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
+              if (_filePath != null) ...[
+                 const Text('Document Attached', style: TextStyle(color: Colors.green)),
+                 TextButton(
+                   onPressed: () async {
+                     await FileService().openDecryptedFile(_filePath!);
+                   }, 
+                   child: const Text('View Document')
+                 )
+              ],
               OutlinedButton.icon(
                 onPressed: _pickFile,
                 icon: const Icon(Icons.attach_file),
