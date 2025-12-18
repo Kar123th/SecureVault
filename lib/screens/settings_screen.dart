@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/security_service.dart';
+import '../services/backup_service.dart';
 import 'setup_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -126,16 +127,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: const Icon(Icons.backup),
                   title: const Text('Backup Data'),
                   subtitle: const Text('Export encrypted backup file'),
-                  onTap: () {
-                    _showError('Backup feature coming soon!');
+                  onTap: () async {
+                    try {
+                      await BackupService.instance.createBackup();
+                    } catch (e) {
+                      _showError('Backup failed: $e');
+                    }
                   },
                 ),
                 ListTile(
                   leading: const Icon(Icons.restore),
                   title: const Text('Restore Data'),
                   subtitle: const Text('Import from backup file'),
-                  onTap: () {
-                    _showError('Restore feature coming soon!');
+                  onTap: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Restore Backup?'),
+                        content: const Text('This will overwrite all current data. This action cannot be undone.'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Restore')),
+                        ],
+                      ),
+                    );
+
+                    if (confirm == true) {
+                      final success = await BackupService.instance.restoreBackup();
+                      if (success && mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Restore successful! Restart app to apply.')),
+                        );
+                        // Force a logout/restart logic if needed
+                      } else {
+                        _showError('Restore failed or cancelled');
+                      }
+                    }
                   },
                 ),
                 const Divider(),
