@@ -1,0 +1,199 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../../services/database_service.dart';
+import '../../models/medical_record_model.dart';
+import 'medical_records_screen.dart'; // Navigation back
+
+class MedicalRecordFormScreen extends StatefulWidget {
+  final MedicalRecord? record; // If null, we are adding new
+
+  const MedicalRecordFormScreen({super.key, this.record});
+
+  @override
+  State<MedicalRecordFormScreen> createState() => _MedicalRecordFormScreenState();
+}
+
+class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
+  final _formKey = GlobalKey<FormState>();
+  
+  late TextEditingController _titleController;
+  late TextEditingController _doctorController;
+  late TextEditingController _notesController;
+  
+  String _selectedType = 'prescription';
+  DateTime _selectedDate = DateTime.now();
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.record?.title ?? '');
+    _doctorController = TextEditingController(text: widget.record?.doctorName ?? '');
+    _notesController = TextEditingController(text: widget.record?.notes ?? '');
+    if (widget.record != null) {
+      _selectedType = widget.record!.recordType;
+      _selectedDate = widget.record!.date;
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _doctorController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _saveRecord() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSaving = true);
+
+    // Prepare data
+    // In a real app, user_id should come from auth provider
+    final newRecord = MedicalRecord(
+      id: widget.record?.id, // Keep ID if editing
+      userId: 1, 
+      title: _titleController.text,
+      recordType: _selectedType,
+      date: _selectedDate,
+      doctorName: _doctorController.text,
+      notes: _notesController.text,
+      // file_path will be handled in Phase 5
+    );
+
+    final db = await DatabaseService.instance.database;
+
+    if (widget.record == null) {
+      // Create New
+      await db.insert('medical_records', newRecord.toJson());
+    } else {
+      // Update Existing
+      await db.update(
+        'medical_records',
+        newRecord.toJson(),
+        where: 'id = ?',
+        whereArgs: [widget.record!.id],
+      );
+    }
+
+    if (mounted) {
+      setState(() => _isSaving = false);
+      Navigator.pop(context, true); // Return true to trigger refresh
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.record == null ? 'Add Medical Record' : 'Edit Record'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Title / Purpose',
+                  hintText: 'e.g. Annual Checkup',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.title),
+                ),
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Please enter a title' : null,
+              ),
+              const SizedBox(height: 16),
+              
+              DropdownButtonFormField<String>(
+                value: _selectedType,
+                decoration: const InputDecoration(
+                  labelText: 'Record Type',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.category),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'prescription', child: Text('Prescription')),
+                  DropdownMenuItem(value: 'lab_report', child: Text('Lab Report')),
+                  DropdownMenuItem(value: 'vaccination', child: Text('Vaccination')),
+                  DropdownMenuItem(value: 'other', child: Text('Other')),
+                ],
+                onChanged: (val) => setState(() => _selectedType = val!),
+              ),
+              const SizedBox(height: 16),
+
+              InkWell(
+                onTap: () => _selectDate(context),
+                child: InputDecorator(
+                  decoration: const InputDecoration(
+                    labelText: 'Date',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.calendar_today),
+                  ),
+                  child: Text(
+                    DateFormat('yyyy-MM-dd').format(_selectedDate),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: _doctorController,
+                decoration: const InputDecoration(
+                  labelText: 'Doctor Name (Optional)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: _notesController,
+                decoration: const InputDecoration(
+                  labelText: 'Notes',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.notes),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 24),
+
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isSaving ? null : _saveRecord,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: _isSaving
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Save Record'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

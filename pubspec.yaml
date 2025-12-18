@@ -1,0 +1,44 @@
+name: secure_vault
+description: A secure offline document vault mobile app.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Core Database & Encryption
+  sqflite_sqlcipher: ^3.1.0+1
+  # sqflite: ^2.3.0
+  # Use sqflite_common_ffi for potential desktop testing (db won't be encrypted on desktop without libs)
+  sqflite_common_ffi: ^2.3.0
+  
+  flutter_secure_storage: ^9.0.0
+  local_auth: ^2.1.6
+  encrypt: ^5.0.3
+  path_provider: ^2.1.1
+  
+  # File Management
+  image_picker: ^1.1.2
+  file_picker: ^8.0.0  # Updated to latest to fix dependency issues
+  
+  # ML & Util
+  google_mlkit_text_recognition: ^0.13.0
+  flutter_local_notifications: ^17.0.0
+  intl: ^0.19.0
+  share_plus: ^9.0.0
+  cupertino_icons: ^1.0.2
+  
+  # UI & Utilities
+  open_filex: ^4.4.0
+  flutter_animate: ^4.5.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
