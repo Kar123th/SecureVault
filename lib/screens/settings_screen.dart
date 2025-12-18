@@ -41,8 +41,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (password != null) {
         final success = await _authService.verifyPassword(password);
         if (success) {
-          await _authService.setBiometricEnabled(true, password);
-          setState(() => _biometricEnabled = true);
+          final bioSuccess = await _authService.setBiometricEnabled(true, password);
+          if (bioSuccess) {
+            setState(() => _biometricEnabled = true);
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Biometrics enabled successfully')));
+          } else {
+            _showError('Biometric verification failed');
+          }
         } else {
           _showError('Invalid Password');
         }

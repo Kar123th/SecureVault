@@ -52,18 +52,26 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleBiometricAuth() async {
-    final password = await _authService.authenticateBiometric();
-    if (password != null) {
-      setState(() => _isLoading = true);
-      final success = await _authService.verifyPassword(password);
-      
-      if (mounted) {
-        setState(() => _isLoading = false);
-        if (success) {
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
+    try {
+      final password = await _authService.authenticateBiometric();
+      if (password != null) {
+        setState(() => _isLoading = true);
+        final success = await _authService.verifyPassword(password);
+        
+        if (mounted) {
+          setState(() => _isLoading = false);
+          if (success) {
+            Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Biometric login failed: Invalid saved credentials')),
+            );
+          }
         }
       }
+    } catch (e) {
+      debugPrint('Biometric login error: $e');
     }
   }
 

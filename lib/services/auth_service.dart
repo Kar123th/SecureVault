@@ -53,6 +53,15 @@ class AuthService {
   Future<bool> setBiometricEnabled(bool enabled, String? password) async {
     if (enabled) {
       if (password == null) return false;
+
+      // Verify that the user can actually authenticate with biometrics on this device
+      bool didAuthenticate = await _localAuth.authenticate(
+        localizedReason: 'Please authenticate to link Biometrics to your Vault',
+        options: const AuthenticationOptions(biometricOnly: true, stickyAuth: true),
+      );
+
+      if (!didAuthenticate) return false;
+
       await _storage.write(key: 'master_password', value: password);
       await _storage.write(key: 'biometric_enabled', value: 'true');
     } else {
