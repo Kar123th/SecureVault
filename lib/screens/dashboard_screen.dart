@@ -5,7 +5,7 @@ import 'package:secure_vault/screens/search_screen.dart'; // Import Search
 import 'package:secure_vault/screens/scanner_screen.dart'; // Import Scanner
 import 'package:secure_vault/screens/setup_screen.dart'; // Reusing setup as settings for demo
 
-// Module Imports
+// Module Imports 
 import 'package:secure_vault/screens/modules/medical_records_screen.dart';
 import 'package:secure_vault/screens/modules/personal_documents_screen.dart';
 import 'package:secure_vault/screens/modules/vehicle_info_screen.dart';
