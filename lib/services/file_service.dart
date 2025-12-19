@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart'; 
+import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
@@ -102,6 +103,14 @@ class FileService {
     final file = await decryptFile(path);
     if (file != null) {
       await OpenFilex.open(file.path);
+    }
+  }
+
+  Future<void> shareFile(String path) async {
+    final file = await decryptFile(path);
+    if (file != null) {
+      final xFile = XFile(file.path);
+      await Share.shareXFiles([xFile], text: 'Sharing from SecureVault');
     }
   }
 }

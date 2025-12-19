@@ -164,13 +164,26 @@ class _EducationFormState extends State<_EducationForm> {
               ),
               const SizedBox(height: 16),
               if (_filePath != null) ...[
-                 const Text('Certificate Attached', style: TextStyle(color: Colors.green)),
-                 TextButton(
-                   onPressed: () async {
-                     await FileService().openDecryptedFile(_filePath!);
-                   }, 
-                   child: const Text('View Certificate')
-                 )
+                 const Center(child: Text('Certificate Attached', style: TextStyle(color: Colors.green))),
+                 Row(
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+                     TextButton.icon(
+                       onPressed: () async {
+                         await FileService().openDecryptedFile(_filePath!);
+                       }, 
+                       icon: const Icon(Icons.remove_red_eye),
+                       label: const Text('View Certificate'),
+                     ),
+                     TextButton.icon(
+                       onPressed: () async {
+                         await FileService().shareFile(_filePath!);
+                       },
+                       icon: const Icon(Icons.share),
+                       label: const Text('Share'),
+                     ),
+                   ],
+                 ),
               ],
               OutlinedButton.icon(
                 onPressed: _pickFile,

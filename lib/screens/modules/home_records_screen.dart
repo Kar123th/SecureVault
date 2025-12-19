@@ -170,13 +170,26 @@ class _HomeFormState extends State<_HomeForm> {
               ),
               const SizedBox(height: 16),
               if (_filePath != null) ...[
-                 const Text('Document Attached', style: TextStyle(color: Colors.green)),
-                 TextButton(
-                   onPressed: () async {
-                     await FileService().openDecryptedFile(_filePath!);
-                   }, 
-                   child: const Text('View Bill/Warranty')
-                 )
+                 const Center(child: Text('Document Attached', style: TextStyle(color: Colors.green))),
+                 Row(
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   children: [
+                     TextButton.icon(
+                       onPressed: () async {
+                         await FileService().openDecryptedFile(_filePath!);
+                       }, 
+                       icon: const Icon(Icons.remove_red_eye),
+                       label: const Text('View Document'),
+                     ),
+                     TextButton.icon(
+                       onPressed: () async {
+                         await FileService().shareFile(_filePath!);
+                       },
+                       icon: const Icon(Icons.share),
+                       label: const Text('Share'),
+                     ),
+                   ],
+                 ),
               ],
               OutlinedButton.icon(
                 onPressed: _pickFile,

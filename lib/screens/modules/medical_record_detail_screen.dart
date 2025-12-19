@@ -57,12 +57,27 @@ class MedicalRecordDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             if (record.filePath != null && record.filePath!.isNotEmpty)
-              ElevatedButton.icon(
-                onPressed: () async {
-                  await FileService().openDecryptedFile(record.filePath!);
-                },
-                icon: const Icon(Icons.attach_file),
-                label: const Text('View Attachment'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        await FileService().openDecryptedFile(record.filePath!);
+                      },
+                      icon: const Icon(Icons.attach_file),
+                      label: const Text('View Attachment'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.filledTonal(
+                    onPressed: () async {
+                      await FileService().shareFile(record.filePath!);
+                    },
+                    icon: const Icon(Icons.share),
+                    tooltip: 'Share File',
+                  ),
+                ],
               ),
           ],
         ),
