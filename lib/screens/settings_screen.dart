@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/security_service.dart';
 import '../services/backup_service.dart';
+import '../utils/app_styles.dart';
 import 'setup_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -91,103 +92,153 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              children: [
-                _buildSectionTitle('Security'),
-                ListTile(
-                  leading: const Icon(Icons.password),
-                  title: const Text('Change Master Password'),
-                  subtitle: const Text('Reset your primary entry code'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const SetupScreen()));
-                  },
-                ),
-                SwitchListTile(
-                  secondary: const Icon(Icons.fingerprint),
-                  title: const Text('Biometric Authentication'),
-                  subtitle: const Text('Unlock with Fingerprint or Face'),
-                  value: _biometricEnabled,
-                  onChanged: _toggleBiometric,
-                ),
-                const Divider(),
-                _buildSectionTitle('Privacy'),
-                SwitchListTile(
-                  secondary: const Icon(Icons.screenshot_monitor),
-                  title: const Text('Prevent Screenshots'),
-                  subtitle: const Text('Block screenshots/screen recordings'),
-                  value: _screenshotPrevention,
-                  onChanged: _toggleScreenshotPrevention,
-                ),
-                const Divider(),
-                _buildSectionTitle('Data Management'),
-                ListTile(
-                  leading: const Icon(Icons.backup),
-                  title: const Text('Backup Data'),
-                  subtitle: const Text('Export encrypted backup file'),
-                  onTap: () async {
-                    try {
-                      await BackupService.instance.createBackup();
-                    } catch (e) {
-                      _showError('Backup failed: $e');
-                    }
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.restore),
-                  title: const Text('Restore Data'),
-                  subtitle: const Text('Import from backup file'),
-                  onTap: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Restore Backup?'),
-                        content: const Text('This will overwrite all current data. This action cannot be undone.'),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Restore')),
-                        ],
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        height: double.infinity,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                children: [
+                  _buildSectionTitle('Security'),
+                  _buildSettingCard(
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: const CircleAvatar(
+                            backgroundColor: Colors.blueAccent,
+                            child: Icon(Icons.password, color: Colors.white, size: 20),
+                          ),
+                          title: const Text('Change Master Password', style: TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: const Text('Reset your primary entry code'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SetupScreen()));
+                          },
+                        ),
+                        const Divider(indent: 70),
+                        SwitchListTile(
+                          secondary: const CircleAvatar(
+                            backgroundColor: Colors.blueAccent,
+                            child: Icon(Icons.fingerprint, color: Colors.white, size: 20),
+                          ),
+                          title: const Text('Biometric Authentication', style: TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: const Text('Unlock with Fingerprint or Face'),
+                          value: _biometricEnabled,
+                          onChanged: _toggleBiometric,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSectionTitle('Privacy'),
+                  _buildSettingCard(
+                    child: SwitchListTile(
+                      secondary: const CircleAvatar(
+                        backgroundColor: Colors.blueAccent,
+                        child: Icon(Icons.screenshot_monitor, color: Colors.white, size: 20),
                       ),
-                    );
-
-                    if (confirm == true) {
-                      final success = await BackupService.instance.restoreBackup();
-                      if (success && mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Restore successful! Restart app to apply.')),
-                        );
-                        // Force a logout/restart logic if needed
-                      } else {
-                        _showError('Restore failed or cancelled');
-                      }
-                    }
-                  },
-                ),
-                const Divider(),
-                _buildSectionTitle('About'),
-                const ListTile(
-                  leading: Icon(Icons.info_outline),
-                  title: Text('SecureVault Version'),
-                  subtitle: Text('1.0.0'),
-                ),
-              ],
-            ),
+                      title: const Text('Prevent Screenshots', style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: const Text('Block screenshots/screen recordings'),
+                      value: _screenshotPrevention,
+                      onChanged: _toggleScreenshotPrevention,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSectionTitle('Data Management'),
+                  _buildSettingCard(
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: const CircleAvatar(
+                            backgroundColor: Colors.green,
+                            child: Icon(Icons.backup, color: Colors.white, size: 20),
+                          ),
+                          title: const Text('Backup Data', style: TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: const Text('Export encrypted backup file'),
+                          onTap: () async {
+                            try {
+                              await BackupService.instance.createBackup();
+                            } catch (e) {
+                              _showError('Backup failed: $e');
+                            }
+                          },
+                        ),
+                        const Divider(indent: 70),
+                        ListTile(
+                          leading: const CircleAvatar(
+                            backgroundColor: Colors.orange,
+                            child: Icon(Icons.restore, color: Colors.white, size: 20),
+                          ),
+                          title: const Text('Restore Data', style: TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: const Text('Import from backup file'),
+                          onTap: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Restore Backup?'),
+                                content: const Text('This will overwrite all current data. This action cannot be undone.'),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                                  TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Restore')),
+                                ],
+                              ),
+                            );
+        
+                            if (confirm == true) {
+                              final success = await BackupService.instance.restoreBackup();
+                              if (success && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Restore successful! Restart app to apply.')),
+                                );
+                              } else {
+                                _showError('Restore failed or cancelled');
+                              }
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSectionTitle('About'),
+                  _buildSettingCard(
+                    child: const ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.grey,
+                        child: Icon(Icons.info_outline, color: Colors.white, size: 20),
+                      ),
+                      title: Text('SecureVault Version', style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text('1.0.0'),
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       child: Text(
-        title,
-        style: TextStyle(
-          color: Theme.of(context).colorScheme.primary,
+        title.toUpperCase(),
+        style: const TextStyle(
+          color: Colors.blueAccent,
           fontWeight: FontWeight.bold,
-          fontSize: 14,
+          fontSize: 12,
+          letterSpacing: 1.1,
         ),
       ),
+    );
+  }
+
+  Widget _buildSettingCard({required Widget child}) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: child,
     );
   }
 }
