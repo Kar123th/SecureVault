@@ -45,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         width: double.infinity,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

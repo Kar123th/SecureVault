@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/all_models.dart';
 import '../../services/database_service.dart';
 import '../../services/file_service.dart';
+import '../../services/notification_service.dart';
 import '../../utils/app_styles.dart';
 
 class TravelRecordsScreen extends StatefulWidget {
@@ -41,7 +42,7 @@ class _TravelRecordsScreenState extends State<TravelRecordsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Travel Documents')),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _records.isEmpty
@@ -120,11 +121,23 @@ class _TravelFormState extends State<_TravelForm> {
     );
 
     final db = await DatabaseService.instance.database;
+    int id;
     if (newItem.id == null) {
-      await db.insert('travel_docs', newItem.toJson());
+      id = await db.insert('travel_docs', newItem.toJson());
     } else {
-      await db.update('travel_docs', newItem.toJson(), where: 'id = ?', whereArgs: [newItem.id]);
+      id = newItem.id!;
+      await db.update('travel_docs', newItem.toJson(), where: 'id = ?', whereArgs: [id]);
     }
+
+    // Schedule expiry notification if date is set
+    if (_expiryDate != null) {
+      await NotificationService().scheduleExpiryWarning(
+        id: id + 400000, // Offset for travel expiry
+        docName: '$_type - ${_countryCtrl.text}',
+        expiryDate: _expiryDate!,
+      );
+    }
+
     if (mounted) Navigator.pop(context);
   }
 
@@ -133,12 +146,38 @@ class _TravelFormState extends State<_TravelForm> {
     if (path != null) setState(() => _filePath = path);
   }
 
+  Future<void> _delete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Document'),
+        content: const Text('Are you sure you want to delete this travel document?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final db = await DatabaseService.instance.database;
+      await db.delete('travel_docs', where: 'id = ?', whereArgs: [widget.record!.id]);
+      if (mounted) Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.record == null ? 'Add Travel Doc' : 'Edit Document')),
+      appBar: AppBar(
+        title: Text(widget.record == null ? 'Add Travel Doc' : 'Edit Document'),
+        actions: [
+          if (widget.record != null)
+            IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
+        ],
+      ),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),

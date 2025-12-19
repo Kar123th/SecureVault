@@ -58,7 +58,7 @@ class _SetupScreenState extends State<SetupScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Setup SecureVault')),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),

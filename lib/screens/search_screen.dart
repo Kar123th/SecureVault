@@ -104,7 +104,7 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         ),
       ),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         child: _isSearching
             ? const Center(child: CircularProgressIndicator())
             : _results.isEmpty

@@ -72,7 +72,7 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
         title: const Text('Medical Records'),
       ),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _records.isEmpty

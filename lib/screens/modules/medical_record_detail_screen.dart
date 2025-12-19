@@ -36,7 +36,7 @@ class MedicalRecordDetailScreen extends StatelessWidget {
         ],
       ),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),

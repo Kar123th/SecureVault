@@ -77,6 +77,37 @@ class AuthService {
     return val == 'true';
   }
 
+  Future<bool> setDecoyPIN(String pin) async {
+    try {
+      await _storage.write(key: 'decoy_pin', value: pin);
+      // Initialize decoy DB with this PIN just to create it
+      await DatabaseService.instance.init(pin, isDecoy: true);
+      return true;
+    } catch (e) {
+      print('Decoy PIN setup error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> hasDecoyPIN() async {
+    String? val = await _storage.read(key: 'decoy_pin');
+    return val != null;
+  }
+
+  Future<bool> verifyDecoyPIN(String pin) async {
+    String? storedPin = await _storage.read(key: 'decoy_pin');
+    if (storedPin == pin) {
+      try {
+        await DatabaseService.instance.init(pin, isDecoy: true);
+        return true;
+      } catch (e) {
+        print('Decoy login error: $e');
+        return false;
+      }
+    }
+    return false;
+  }
+
   Future<String?> authenticateBiometric() async {
     try {
       bool canCheckBiometrics = await _localAuth.canCheckBiometrics;
@@ -96,3 +127,4 @@ class AuthService {
     return null;
   }
 }
+

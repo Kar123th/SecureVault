@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../services/database_service.dart';
 import '../../models/medical_record_model.dart';
 import '../../services/file_service.dart';
+import '../../services/notification_service.dart';
 import '../../utils/app_styles.dart';
 import 'medical_records_screen.dart';
 
@@ -24,6 +25,7 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
   
   String _selectedType = 'prescription';
   DateTime _selectedDate = DateTime.now();
+  DateTime? _expiryDate;
   String? _filePath; // Added
   bool _isSaving = false;
 
@@ -36,7 +38,8 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
     if (widget.record != null) {
       _selectedType = widget.record!.recordType;
       _selectedDate = widget.record!.date;
-      _filePath = widget.record!.filePath; // Added
+      _filePath = widget.record!.filePath;
+      _expiryDate = widget.record!.expiryDate;
     }
   }
 
@@ -48,16 +51,20 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
     super.dispose();
   }
 
-  Future<void> _selectDate(BuildContext context) async {
+  Future<void> _selectDate(BuildContext context, {bool isExpiry = false}) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDate: isExpiry ? (_expiryDate ?? DateTime.now()) : _selectedDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != _selectedDate) {
+    if (picked != null) {
       setState(() {
-        _selectedDate = picked;
+        if (isExpiry) {
+          _expiryDate = picked;
+        } else {
+          _selectedDate = picked;
+        }
       });
     }
   }
@@ -80,19 +87,24 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
       date: _selectedDate,
       doctorName: _doctorController.text,
       notes: _notesController.text,
-      filePath: _filePath, // Added
+      filePath: _filePath,
+      expiryDate: _expiryDate,
     );
 
     final db = await DatabaseService.instance.database;
-
+    int id;
     if (widget.record == null) {
-      await db.insert('medical_records', newRecord.toJson());
+      id = await db.insert('medical_records', newRecord.toJson());
     } else {
-      await db.update(
-        'medical_records',
-        newRecord.toJson(),
-        where: 'id = ?',
-        whereArgs: [widget.record!.id],
+      id = widget.record!.id!;
+      await db.update('medical_records', newRecord.toJson(), where: 'id = ?', whereArgs: [id]);
+    }
+
+    if (_expiryDate != null) {
+      await NotificationService().scheduleExpiryWarning(
+        id: id + 500000, // Offset for medical expiry
+        docName: 'Medical: ${_titleController.text}',
+        expiryDate: _expiryDate!,
       );
     }
 
@@ -102,14 +114,38 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
     }
   }
 
+  Future<void> _delete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Record'),
+        content: const Text('Are you sure you want to delete this medical record?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final db = await DatabaseService.instance.database;
+      await db.delete('medical_records', where: 'id = ?', whereArgs: [widget.record!.id]);
+      if (mounted) Navigator.pop(context, true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.record == null ? 'Add Medical Record' : 'Edit Record'),
+        actions: [
+          if (widget.record != null)
+            IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
+        ],
       ),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
@@ -158,6 +194,21 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
                     ),
                     child: Text(
                       DateFormat('yyyy-MM-dd').format(_selectedDate),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                InkWell(
+                  onTap: () => _selectDate(context, isExpiry: true),
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Expiry Date (Optional)',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.event_busy),
+                    ),
+                    child: Text(
+                      _expiryDate == null ? 'None' : DateFormat('yyyy-MM-dd').format(_expiryDate!),
                     ),
                   ),
                 ),

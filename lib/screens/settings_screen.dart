@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/theme_provider.dart';
 import '../services/auth_service.dart';
 import '../services/security_service.dart';
 import '../services/backup_service.dart';
@@ -65,6 +67,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _screenshotPrevention = value);
   }
 
+  Future<void> _setupDecoyPIN() async {
+    String? pin;
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Setup Decoy PIN'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Enter a secondary PIN that will open a decoy vault with no sensitive data.'),
+            const SizedBox(height: 16),
+            TextField(
+              obscureText: true,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Decoy PIN (Numeric)'),
+              onChanged: (v) => pin = v,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, pin), child: const Text('Save')),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty) {
+      final success = await _authService.setDecoyPIN(result);
+      if (success) {
+        _showError('Decoy PIN setup successfully');
+      } else {
+        _showError('Failed to setup Decoy PIN');
+      }
+    }
+  }
+
   Future<String?> _showPasswordDialog() async {
     String? password;
     return showDialog<String>(
@@ -93,7 +131,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -127,21 +165,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           value: _biometricEnabled,
                           onChanged: _toggleBiometric,
                         ),
+                        const Divider(indent: 70),
+                        ListTile(
+                          leading: const CircleAvatar(
+                            backgroundColor: Colors.redAccent,
+                            child: Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+                          ),
+                          title: const Text('Setup Decoy PIN', style: TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: const Text('Set a fake PIN for emergency situations'),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: _setupDecoyPIN,
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 16),
                   _buildSectionTitle('Privacy'),
                   _buildSettingCard(
-                    child: SwitchListTile(
-                      secondary: const CircleAvatar(
-                        backgroundColor: Colors.blueAccent,
-                        child: Icon(Icons.screenshot_monitor, color: Colors.white, size: 20),
-                      ),
-                      title: const Text('Prevent Screenshots', style: TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: const Text('Block screenshots/screen recordings'),
-                      value: _screenshotPrevention,
-                      onChanged: _toggleScreenshotPrevention,
+                    child: Column(
+                      children: [
+                        Consumer<ThemeProvider>(
+                          builder: (context, themeProvider, child) {
+                            return SwitchListTile(
+                              secondary: const CircleAvatar(
+                                backgroundColor: Colors.blueAccent,
+                                child: Icon(Icons.dark_mode, color: Colors.white, size: 20),
+                              ),
+                              title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: const Text('Toggle between light and dark themes'),
+                              value: themeProvider.isDarkMode,
+                              onChanged: (value) => themeProvider.toggleTheme(),
+                            );
+                          },
+                        ),
+                        const Divider(indent: 70),
+                        SwitchListTile(
+                          secondary: const CircleAvatar(
+                            backgroundColor: Colors.blueAccent,
+                            child: Icon(Icons.screenshot_monitor, color: Colors.white, size: 20),
+                          ),
+                          title: const Text('Prevent Screenshots', style: TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: const Text('Block screenshots/screen recordings'),
+                          value: _screenshotPrevention,
+                          onChanged: _toggleScreenshotPrevention,
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 16),

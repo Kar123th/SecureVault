@@ -37,6 +37,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
+    // 1. Check for Decoy PIN first
+    final isDecoy = await _authService.verifyDecoyPIN(password);
+    
+    if (isDecoy) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const DashboardScreen(isDecoy: true)));
+      }
+      return;
+    }
+
+    // 2. Normal Password Login
     final success = await _authService.verifyPassword(password);
 
     if (mounted) {
@@ -80,7 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         width: double.infinity,
         child: SingleChildScrollView(

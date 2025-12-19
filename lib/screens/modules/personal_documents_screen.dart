@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/all_models.dart';
 import '../../services/database_service.dart';
 import '../../services/file_service.dart';
+import '../../services/notification_service.dart';
 import '../../utils/app_styles.dart';
 
 class PersonalDocumentsScreen extends StatefulWidget {
@@ -44,7 +45,7 @@ class _PersonalDocumentsScreenState extends State<PersonalDocumentsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Personal Documents')),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _documents.isEmpty
@@ -126,11 +127,23 @@ class _PersonalDocFormState extends State<_PersonalDocForm> {
     );
 
     final db = await DatabaseService.instance.database;
+    int id;
     if (newItem.id == null) {
-      await db.insert('personal_documents', newItem.toJson());
+      id = await db.insert('personal_documents', newItem.toJson());
     } else {
-      await db.update('personal_documents', newItem.toJson(), where: 'id = ?', whereArgs: [newItem.id]);
+      id = newItem.id!;
+      await db.update('personal_documents', newItem.toJson(), where: 'id = ?', whereArgs: [id]);
     }
+
+    // Schedule expiry notification if date is set
+    if (_expiryDate != null) {
+      await NotificationService().scheduleExpiryWarning(
+        id: id,
+        docName: _nameCtrl.text,
+        expiryDate: _expiryDate!,
+      );
+    }
+
     if (mounted) Navigator.pop(context);
   }
 
@@ -139,12 +152,38 @@ class _PersonalDocFormState extends State<_PersonalDocForm> {
     if (path != null) setState(() => _filePath = path);
   }
 
+  Future<void> _delete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Document'),
+        content: const Text('Are you sure you want to delete this document?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final db = await DatabaseService.instance.database;
+      await db.delete('personal_documents', where: 'id = ?', whereArgs: [widget.document!.id]);
+      if (mounted) Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.document == null ? 'Add Document' : 'Edit Document')),
+      appBar: AppBar(
+        title: Text(widget.document == null ? 'Add Document' : 'Edit Document'),
+        actions: [
+          if (widget.document != null)
+            IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
+        ],
+      ),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),

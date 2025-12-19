@@ -49,9 +49,26 @@ class NotificationService {
     );
   }
 
+  Future<void> scheduleExpiryWarning({
+    required int id,
+    required String docName,
+    required DateTime expiryDate,
+  }) async {
+    // Schedule for 30 days before at 10:00 AM
+    final warningDate = expiryDate.subtract(const Duration(days: 30));
+    
+    await _scheduleNotification(
+      id: id + 200000, // Offset for expiry warnings
+      title: 'Document Expiring Soon',
+      body: 'Your document "$docName" will expire in 30 days. Please take action.',
+      scheduledDate: _getScheduledDate(warningDate, 10),
+    );
+  }
+
   Future<void> cancelReminder(int id) async {
     await _notifications.cancel(id);
-    await _notifications.cancel(id + 100000);
+    await _notifications.cancel(id + 100000); // Normal reminder prefix
+    await _notifications.cancel(id + 200000); // Expiry warning prefix
   }
 
   Future<void> _scheduleNotification({

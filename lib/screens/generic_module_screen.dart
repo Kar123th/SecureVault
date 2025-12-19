@@ -75,7 +75,7 @@ class _GenericModuleListScreenState<T> extends State<GenericModuleListScreen<T>>
     return Scaffold(
       appBar: AppBar(title: Text(widget.config.title)),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         child: _isLoading ? const Center(child: CircularProgressIndicator()) : 
           _items.isEmpty ? Center(child: Text('No ${widget.config.title} yet')) :
           ListView.builder(
@@ -174,7 +174,7 @@ class _GenericFormScreenState<T> extends State<GenericFormScreen<T>> {
     return Scaffold(
       appBar: AppBar(title: Text('${widget.item == null ? 'Add' : 'Edit'} ${widget.config.title}')),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         child: Form(
           key: _formKey,

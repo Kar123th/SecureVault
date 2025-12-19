@@ -29,7 +29,7 @@ class VaultScaffold extends StatelessWidget {
       ) : null),
       extendBodyBehindAppBar: true,
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         child: SafeArea(
           child: body,
         ),

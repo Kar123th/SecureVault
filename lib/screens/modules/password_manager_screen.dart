@@ -50,7 +50,7 @@ class _PasswordManagerScreenState extends State<PasswordManagerScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Password Manager')),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _passwords.isEmpty
@@ -179,7 +179,7 @@ class _PasswordFormState extends State<_PasswordForm> {
         ],
       ),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),

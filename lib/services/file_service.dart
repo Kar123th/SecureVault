@@ -36,17 +36,17 @@ class FileService {
     );
     
     if (image == null) return null;
-    return await _encryptFile(File(image.path));
+    return await encryptFile(File(image.path));
   }
 
   // Pick and Encrypt Document (PDF etc)
   Future<String?> pickAndEncryptFile() async {
     final result = await FilePicker.platform.pickFiles();
     if (result == null || result.files.single.path == null) return null;
-    return await _encryptFile(File(result.files.single.path!));
+    return await encryptFile(File(result.files.single.path!));
   }
 
-  Future<String> _encryptFile(File originalFile) async {
+  Future<String> encryptFile(File originalFile) async {
     final keyStr = await _getEncryptionKey();
     final key = enc.Key.fromBase64(keyStr);
     final iv = enc.IV.fromLength(16);

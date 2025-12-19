@@ -19,7 +19,8 @@ import 'package:secure_vault/screens/modules/password_manager_screen.dart';
 import 'package:secure_vault/screens/modules/reminders_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  final bool isDecoy;
+  const DashboardScreen({super.key, this.isDecoy = false});
 
   final List<Map<String, dynamic>> categories = const [
     {'title': 'Medical Records', 'icon': Icons.medical_services_outlined, 'color': Colors.redAccent, 'route': '/medical'},
@@ -56,9 +57,12 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: isDark ? null : BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -75,16 +79,16 @@ class DashboardScreen extends StatelessWidget {
             SliverAppBar(
               floating: true,
               pinned: true,
-              backgroundColor: Colors.white.withOpacity(0.9),
+              backgroundColor: theme.scaffoldBackgroundColor.withOpacity(0.9),
               elevation: 0,
               title: Row(
                 children: [
                   Image.asset('assets/images/logo.png', height: 28),
                   const SizedBox(width: 10),
-                  const Text(
-                    'SecureVault',
+                  Text(
+                    isDecoy ? 'Decoy Vault' : 'SecureVault',
                     style: TextStyle(
-                      color: Colors.black87, 
+                      color: isDark ? Colors.white : Colors.black87, 
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
@@ -93,11 +97,11 @@ class DashboardScreen extends StatelessWidget {
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.search, color: Colors.black87),
+                  icon: Icon(Icons.search, color: isDark ? Colors.white : Colors.black87),
                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GlobalSearchScreen())),
                 ),
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, color: Colors.black87),
+                  icon: Icon(Icons.more_vert, color: isDark ? Colors.white : Colors.black87),
                   onSelected: (value) {
                     if (value == 'logout') {
                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (r) => false);
@@ -115,13 +119,13 @@ class DashboardScreen extends StatelessWidget {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
               sliver: SliverToBoxAdapter(
-                child: const Text(
-                  'My Vault',
+                child: Text(
+                  isDecoy ? 'Decoy Vault' : 'My Vault',
                   style: TextStyle(
                     fontSize: 28, 
                     fontWeight: FontWeight.w800, 
                     letterSpacing: -0.5,
-                    color: Colors.black87,
+                    color: isDark ? Colors.white : theme.primaryColorDark,
                   ),
                 ).animate().fadeIn().moveX(begin: -20, end: 0),
               ),
@@ -174,10 +178,13 @@ class _DashboardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
+        boxShadow: isDark ? [] : [
           BoxShadow(
             color: Colors.blue.shade100.withOpacity(0.3),
             blurRadius: 20,
@@ -187,10 +194,10 @@ class _DashboardCard extends StatelessWidget {
       ),
       child: Card(
         elevation: 0,
-        color: Colors.white.withOpacity(0.9),
+        color: isDark ? theme.cardColor : Colors.white.withOpacity(0.9),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: Colors.blue.shade50, width: 1),
+          side: BorderSide(color: isDark ? Colors.white12 : Colors.blue.shade50, width: 1),
         ),
         child: InkWell(
           onTap: onTap,
@@ -214,10 +221,10 @@ class _DashboardCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15, 
                     fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                    color: isDark ? Colors.white70 : Colors.black87,
                     height: 1.2,
                   ),
                 ),
@@ -229,3 +236,4 @@ class _DashboardCard extends StatelessWidget {
     );
   }
 }
+

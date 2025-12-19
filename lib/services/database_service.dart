@@ -15,15 +15,14 @@ class DatabaseService {
     throw Exception("Database not initialized! Call init(password) first.");
   }
 
-  Future<void> init(String password) async {
+  Future<void> init(String password, {bool isDecoy = false}) async {
     final dbPath = await getApplicationDocumentsDirectory();
-    final path = join(dbPath.path, 'secure_vault.db');
+    final dbName = isDecoy ? 'secure_vault_decoy.db' : 'secure_vault.db';
+    final path = join(dbPath.path, dbName);
     
-    // On Android/iOS, this uses SQLCipher with encryption.
-    // On Windows/Linux (if running via FFI), this might default to unencrypted 
-    // depending on the loaded libs, but since we are targeting Android now,
-    // this will provide the full security.
-    
+    // Close existing database if any
+    await close();
+
     _database = await openDatabase(
       path,
       version: 2,
@@ -31,7 +30,7 @@ class DatabaseService {
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
-     print("🔒 SECURE VAULT INITIALIZED WITH ENCRYPTION 🔒");
+     print("🔒 ${isDecoy ? 'DECOY' : 'SECURE'} VAULT INITIALIZED WITH ENCRYPTION 🔒");
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {

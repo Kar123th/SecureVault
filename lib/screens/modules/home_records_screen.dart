@@ -41,7 +41,7 @@ class _HomeRecordsScreenState extends State<HomeRecordsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Home & Warranty')),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _records.isEmpty
@@ -136,12 +136,38 @@ class _HomeFormState extends State<_HomeForm> {
     if (path != null) setState(() => _filePath = path);
   }
 
+  Future<void> _delete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Item'),
+        content: const Text('Are you sure you want to delete this home record?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final db = await DatabaseService.instance.database;
+      await db.delete('home_records', where: 'id = ?', whereArgs: [widget.record!.id]);
+      if (mounted) Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.record == null ? 'Add Item' : 'Edit Item')),
+      appBar: AppBar(
+        title: Text(widget.record == null ? 'Add Item' : 'Edit Item'),
+        actions: [
+          if (widget.record != null)
+            IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
+        ],
+      ),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),

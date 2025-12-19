@@ -67,7 +67,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Reminders & Alerts')),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _reminders.isEmpty
@@ -251,7 +251,7 @@ class _ReminderFormState extends State<_ReminderForm> {
         ],
       ),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),

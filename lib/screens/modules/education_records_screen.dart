@@ -40,7 +40,7 @@ class _EducationRecordsScreenState extends State<EducationRecordsScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Education')),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : _records.isEmpty
@@ -132,12 +132,38 @@ class _EducationFormState extends State<_EducationForm> {
     if (path != null) setState(() => _filePath = path);
   }
 
+  Future<void> _delete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Record'),
+        content: const Text('Are you sure you want to delete this education record?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final db = await DatabaseService.instance.database;
+      await db.delete('education_records', where: 'id = ?', whereArgs: [widget.record!.id]);
+      if (mounted) Navigator.pop(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.record == null ? 'Add Education' : 'Edit Education')),
+      appBar: AppBar(
+        title: Text(widget.record == null ? 'Add Education' : 'Edit Education'),
+        actions: [
+          if (widget.record != null)
+            IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
+        ],
+      ),
       body: Container(
-        decoration: AppStyles.mainGradientDecoration,
+        decoration: AppStyles.mainGradientDecoration(context),
         height: double.infinity,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
