@@ -52,7 +52,13 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SecureVault').animate().fade(duration: 500.ms).slide(),
+        title: Row(
+          children: [
+            Image.asset('assets/images/logo.png', height: 32),
+            const SizedBox(width: 8),
+            const Text('SecureVault'),
+          ],
+        ).animate().fade(duration: 500.ms).slide(),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
