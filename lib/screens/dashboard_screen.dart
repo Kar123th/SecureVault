@@ -15,6 +15,8 @@ import 'package:secure_vault/screens/modules/education_records_screen.dart';
 import 'package:secure_vault/screens/modules/home_records_screen.dart';
 import 'package:secure_vault/screens/modules/travel_records_screen.dart';
 import 'package:secure_vault/screens/modules/emergency_info_screen.dart';
+import 'package:secure_vault/screens/modules/password_manager_screen.dart';
+import 'package:secure_vault/screens/modules/reminders_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -28,6 +30,8 @@ class DashboardScreen extends StatelessWidget {
     {'title': 'Home & Warranty', 'icon': Icons.home_outlined, 'color': Colors.brown, 'route': '/home'},
     {'title': 'Travel Docs', 'icon': Icons.flight_takeoff, 'color': Colors.lightBlue, 'route': '/travel'},
     {'title': 'Emergency', 'icon': Icons.emergency_outlined, 'color': Colors.red, 'route': '/emergency'},
+    {'title': 'Passwords', 'icon': Icons.password_outlined, 'color': Colors.teal, 'route': '/passwords'},
+    {'title': 'Reminders', 'icon': Icons.notifications_active_outlined, 'color': Colors.indigo, 'route': '/reminders'},
   ];
 
   void _navigateTo(BuildContext context, String route) {
@@ -41,6 +45,8 @@ class DashboardScreen extends StatelessWidget {
       case '/home': screen = const HomeRecordsScreen(); break;
       case '/travel': screen = const TravelRecordsScreen(); break;
       case '/emergency': screen = const EmergencyInfoScreen(); break;
+      case '/passwords': screen = const PasswordManagerScreen(); break;
+      case '/reminders': screen = const RemindersScreen(); break;
     }
 
     if (screen != null) {

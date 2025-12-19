@@ -159,3 +159,48 @@ class EmergencyInfo {
     id: json['id'], userId: json['user_id'], infoType: json['info_type'], name: json['name'], value: json['value'], notes: json['notes'],
   );
 }
+
+// --- Password Manager ---
+class PasswordItem {
+  final int? id;
+  final int userId;
+  final String accountName;
+  final String username;
+  final String password;
+  final String? website;
+  final String? notes;
+
+  PasswordItem({this.id, required this.userId, required this.accountName, required this.username, required this.password, this.website, this.notes});
+
+  Map<String, dynamic> toJson() => {
+    'id': id, 'user_id': userId, 'account_name': accountName, 'username': username, 'password': password, 'website': website, 'notes': notes,
+  };
+
+  static PasswordItem fromJson(Map<String, dynamic> json) => PasswordItem(
+    id: json['id'], userId: json['user_id'], accountName: json['account_name'], username: json['username'], password: json['password'], website: json['website'], notes: json['notes'],
+  );
+}
+
+// --- Reminders ---
+class ReminderItem {
+  final int? id;
+  final int userId;
+  final String title;
+  final String category; // Electricity, Insurance, SIP, Other
+  final DateTime reminderDate;
+  final bool isCompleted;
+  final String? notes;
+
+  ReminderItem({this.id, required this.userId, required this.title, required this.category, required this.reminderDate, this.isCompleted = false, this.notes});
+
+  Map<String, dynamic> toJson() => {
+    'id': id, 'user_id': userId, 'title': title, 'category': category, 'reminder_date': reminderDate.toIso8601String(), 'is_completed': isCompleted ? 1 : 0, 'notes': notes,
+  };
+
+  static ReminderItem fromJson(Map<String, dynamic> json) => ReminderItem(
+    id: json['id'], userId: json['user_id'], title: json['title'], category: json['category'], 
+    reminderDate: DateTime.parse(json['reminder_date']),
+    isCompleted: json['is_completed'] == 1,
+    notes: json['notes'],
+  );
+}

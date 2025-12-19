@@ -26,11 +26,46 @@ class DatabaseService {
     
     _database = await openDatabase(
       path,
-      version: 1,
+      version: 2,
       password: password,
       onCreate: _createDB,
+      onUpgrade: _onUpgrade,
     );
      print("🔒 SECURE VAULT INITIALIZED WITH ENCRYPTION 🔒");
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
+    const textType = 'TEXT';
+    const intType = 'INTEGER';
+
+    if (oldVersion < 2) {
+      await db.execute('''
+CREATE TABLE passwords (
+  id $idType,
+  user_id $intType,
+  account_name $textType,
+  username $textType,
+  password $textType,
+  website $textType,
+  notes $textType,
+  created_at $textType
+)
+''');
+
+      await db.execute('''
+CREATE TABLE reminders (
+  id $idType,
+  user_id $intType,
+  title $textType,
+  category $textType,
+  reminder_date $textType,
+  is_completed $intType,
+  notes $textType,
+  created_at $textType
+)
+''');
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -160,6 +195,34 @@ CREATE TABLE emergency_info (
   info_type $textType,
   name $textType,
   value $textType,
+  notes $textType,
+  created_at $textType
+)
+''');
+
+    // Password Manager
+    await db.execute('''
+CREATE TABLE passwords (
+  id $idType,
+  user_id $intType,
+  account_name $textType,
+  username $textType,
+  password $textType,
+  website $textType,
+  notes $textType,
+  created_at $textType
+)
+''');
+
+    // Reminders
+    await db.execute('''
+CREATE TABLE reminders (
+  id $idType,
+  user_id $intType,
+  title $textType,
+  category $textType,
+  reminder_date $textType,
+  is_completed $intType,
   notes $textType,
   created_at $textType
 )
