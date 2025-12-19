@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../services/database_service.dart';
 import '../../models/medical_record_model.dart';
-import '../../services/file_service.dart'; // Added
-import 'medical_records_screen.dart'; // Navigation back
+import '../../services/file_service.dart';
+import '../../utils/app_styles.dart';
+import 'medical_records_screen.dart';
 
 class MedicalRecordFormScreen extends StatefulWidget {
   final MedicalRecord? record; // If null, we are adding new
@@ -107,111 +108,121 @@ class _MedicalRecordFormScreenState extends State<MedicalRecordFormScreen> {
       appBar: AppBar(
         title: Text(widget.record == null ? 'Add Medical Record' : 'Edit Record'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title / Purpose',
-                  hintText: 'e.g. Annual Checkup',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.title),
-                ),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Please enter a title' : null,
-              ),
-              const SizedBox(height: 16),
-              
-              DropdownButtonFormField<String>(
-                value: _selectedType,
-                decoration: const InputDecoration(
-                  labelText: 'Record Type',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.category),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'prescription', child: Text('Prescription')),
-                  DropdownMenuItem(value: 'lab_report', child: Text('Lab Report')),
-                  DropdownMenuItem(value: 'vaccination', child: Text('Vaccination')),
-                  DropdownMenuItem(value: 'other', child: Text('Other')),
-                ],
-                onChanged: (val) => setState(() => _selectedType = val!),
-              ),
-              const SizedBox(height: 16),
-
-              InkWell(
-                onTap: () => _selectDate(context),
-                child: InputDecorator(
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        height: double.infinity,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _titleController,
                   decoration: const InputDecoration(
-                    labelText: 'Date',
+                    labelText: 'Title / Purpose',
+                    hintText: 'e.g. Annual Checkup',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.calendar_today),
+                    prefixIcon: Icon(Icons.title),
                   ),
-                  child: Text(
-                    DateFormat('yyyy-MM-dd').format(_selectedDate),
+                  validator: (value) =>
+                      value == null || value.isEmpty ? 'Please enter a title' : null,
+                ),
+                const SizedBox(height: 16),
+                
+                DropdownButtonFormField<String>(
+                  value: _selectedType,
+                  decoration: const InputDecoration(
+                    labelText: 'Record Type',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.category),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'prescription', child: Text('Prescription')),
+                    DropdownMenuItem(value: 'lab_report', child: Text('Lab Report')),
+                    DropdownMenuItem(value: 'vaccination', child: Text('Vaccination')),
+                    DropdownMenuItem(value: 'other', child: Text('Other')),
+                  ],
+                  onChanged: (val) => setState(() => _selectedType = val!),
+                ),
+                const SizedBox(height: 16),
+  
+                InkWell(
+                  onTap: () => _selectDate(context),
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Date',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.calendar_today),
+                    ),
+                    child: Text(
+                      DateFormat('yyyy-MM-dd').format(_selectedDate),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: _doctorController,
-                decoration: const InputDecoration(
-                  labelText: 'Doctor Name (Optional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                const SizedBox(height: 16),
+  
+                TextFormField(
+                  controller: _doctorController,
+                  decoration: const InputDecoration(
+                    labelText: 'Doctor Name (Optional)',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: _notesController,
-                decoration: const InputDecoration(
-                  labelText: 'Notes',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.notes),
+                const SizedBox(height: 16),
+  
+                TextFormField(
+                  controller: _notesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.notes),
+                  ),
+                  maxLines: 3,
                 ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-
-              if (_filePath != null) ...[
-                 const Text('Attachment Linked (Encrypted)', style: TextStyle(color: Colors.green)),
-                 TextButton.icon(
-                   onPressed: () async {
-                     await FileService().openDecryptedFile(_filePath!);
-                   }, 
-                   icon: const Icon(Icons.remove_red_eye),
-                   label: const Text('View Current File')
-                 )
+                const SizedBox(height: 16),
+  
+                if (_filePath != null) ...[
+                   const Text('Attachment Linked (Encrypted)', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                   TextButton.icon(
+                     onPressed: () async {
+                       await FileService().openDecryptedFile(_filePath!);
+                     }, 
+                     icon: const Icon(Icons.remove_red_eye),
+                     label: const Text('View Current File')
+                   )
+                ],
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _pickFile,
+                    icon: const Icon(Icons.attach_file),
+                    label: Text(_filePath == null ? 'Attach Document' : 'Change Document'),
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+                  ),
+                ),
+                const SizedBox(height: 32),
+  
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : _saveRecord,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: _isSaving
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Save Record'),
+                  ),
+                ),
               ],
-              OutlinedButton.icon(
-                onPressed: _pickFile,
-                icon: const Icon(Icons.attach_file),
-                label: Text(_filePath == null ? 'Attach Document' : 'Change Document'),
-              ),
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : _saveRecord,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: _isSaving
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Save Record'),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

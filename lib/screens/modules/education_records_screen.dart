@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/all_models.dart';
 import '../../services/database_service.dart';
 import '../../services/file_service.dart';
+import '../../utils/app_styles.dart';
 
 class EducationRecordsScreen extends StatefulWidget {
   const EducationRecordsScreen({super.key});
@@ -38,26 +39,35 @@ class _EducationRecordsScreenState extends State<EducationRecordsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Education')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _records.isEmpty
-              ? const Center(child: Text('No education records'))
-              : ListView.builder(
-                  itemCount: _records.length,
-                  itemBuilder: (context, index) {
-                    final r = _records[index];
-                    return Card(
-                      child: ListTile(
-                        leading: const CircleAvatar(child: Icon(Icons.school)),
-                        title: Text(r.degreeName),
-                        subtitle: Text('${r.institution}\nYear: ${r.yearOfPassing ?? "N/A"}'),
-                        isThreeLine: true,
-                        trailing: const Icon(Icons.edit),
-                        onTap: () => _showForm(r),
-                      ),
-                    );
-                  },
-                ),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _records.isEmpty
+                ? const Center(child: Text('No education records'))
+                : ListView.builder(
+                    itemCount: _records.length,
+                    itemBuilder: (context, index) {
+                      final r = _records[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.purpleAccent.withOpacity(0.1),
+                            child: const Icon(Icons.school, color: Colors.purpleAccent),
+                          ),
+                          title: Text(r.degreeName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text('${r.institution}\nYear: ${r.yearOfPassing ?? "N/A"}'),
+                          isThreeLine: true,
+                          trailing: const Icon(Icons.edit, size: 20),
+                          onTap: () => _showForm(r),
+                        ),
+                      );
+                    },
+                  ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(),
         child: const Icon(Icons.add),
@@ -126,77 +136,89 @@ class _EducationFormState extends State<_EducationForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.record == null ? 'Add Education' : 'Edit Education')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _degCtrl,
-                decoration: const InputDecoration(labelText: 'Degree / Certificate'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _instCtrl,
-                decoration: const InputDecoration(labelText: 'Institution / Board'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _yearCtrl,
-                      decoration: const InputDecoration(labelText: 'Year of Passing'),
-                      keyboardType: TextInputType.number,
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        height: double.infinity,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _degCtrl,
+                  decoration: const InputDecoration(labelText: 'Degree / Certificate', border: OutlineInputBorder()),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _instCtrl,
+                  decoration: const InputDecoration(labelText: 'Institution / Board', border: OutlineInputBorder()),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _yearCtrl,
+                        decoration: const InputDecoration(labelText: 'Year of Passing', border: OutlineInputBorder()),
+                        keyboardType: TextInputType.number,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _gradeCtrl,
-                      decoration: const InputDecoration(labelText: 'Grade / %'),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _gradeCtrl,
+                        decoration: const InputDecoration(labelText: 'Grade / %', border: OutlineInputBorder()),
+                      ),
                     ),
-                  ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                if (_filePath != null) ...[
+                   const Center(child: Text('Certificate Attached', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold))),
+                   Row(
+                     mainAxisAlignment: MainAxisAlignment.center,
+                     children: [
+                       TextButton.icon(
+                         onPressed: () async {
+                           await FileService().openDecryptedFile(_filePath!);
+                         }, 
+                         icon: const Icon(Icons.remove_red_eye),
+                         label: const Text('View Certificate'),
+                       ),
+                       TextButton.icon(
+                         onPressed: () async {
+                           await FileService().shareFile(_filePath!);
+                         },
+                         icon: const Icon(Icons.share),
+                         label: const Text('Share'),
+                       ),
+                     ],
+                   ),
                 ],
-              ),
-              const SizedBox(height: 16),
-              if (_filePath != null) ...[
-                 const Center(child: Text('Certificate Attached', style: TextStyle(color: Colors.green))),
-                 Row(
-                   mainAxisAlignment: MainAxisAlignment.center,
-                   children: [
-                     TextButton.icon(
-                       onPressed: () async {
-                         await FileService().openDecryptedFile(_filePath!);
-                       }, 
-                       icon: const Icon(Icons.remove_red_eye),
-                       label: const Text('View Certificate'),
-                     ),
-                     TextButton.icon(
-                       onPressed: () async {
-                         await FileService().shareFile(_filePath!);
-                       },
-                       icon: const Icon(Icons.share),
-                       label: const Text('Share'),
-                     ),
-                   ],
-                 ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _pickFile,
+                    icon: const Icon(Icons.attach_file),
+                    label: Text(_filePath == null ? 'Attach Certificate' : 'Change Certificate'),
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _save,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Save'),
+                )
               ],
-              OutlinedButton.icon(
-                onPressed: _pickFile,
-                icon: const Icon(Icons.attach_file),
-                label: Text(_filePath == null ? 'Attach Certificate' : 'Change Certificate'),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-                child: const Text('Save'),
-              )
-            ],
+            ),
           ),
         ),
       ),

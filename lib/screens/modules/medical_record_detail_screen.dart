@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/medical_record_model.dart';
 import '../../services/file_service.dart';
 import 'medical_record_form_screen.dart';
+import '../../utils/app_styles.dart';
 
 class MedicalRecordDetailScreen extends StatelessWidget {
   final MedicalRecord record;
@@ -34,52 +35,82 @@ class MedicalRecordDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: 24),
-            _buildDetailRow(Icons.category, 'Type', record.recordType),
-            _buildDetailRow(Icons.calendar_today, 'Date', 
-                DateFormat('yyyy-MM-dd').format(record.date)),
-            _buildDetailRow(Icons.person, 'Doctor', record.doctorName ?? 'N/A'),
-            const Divider(height: 32),
-            const Text(
-              'Notes',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              record.notes ?? 'No notes available.',
-              style: const TextStyle(fontSize: 16, height: 1.5),
-            ),
-            const SizedBox(height: 24),
-            if (record.filePath != null && record.filePath!.isNotEmpty)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        await FileService().openDecryptedFile(record.filePath!);
-                      },
-                      icon: const Icon(Icons.attach_file),
-                      label: const Text('View Attachment'),
-                    ),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        height: double.infinity,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              const SizedBox(height: 24),
+              Card(
+                elevation: 0,
+                color: Colors.white.withOpacity(0.5),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _buildDetailRow(Icons.category, 'Type', record.recordType),
+                      const Divider(),
+                      _buildDetailRow(Icons.calendar_today, 'Date', 
+                          DateFormat('yyyy-MM-dd').format(record.date)),
+                      const Divider(),
+                      _buildDetailRow(Icons.person, 'Doctor', record.doctorName ?? 'N/A'),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  IconButton.filledTonal(
-                    onPressed: () async {
-                      await FileService().shareFile(record.filePath!);
-                    },
-                    icon: const Icon(Icons.share),
-                    tooltip: 'Share File',
-                  ),
-                ],
+                ),
               ),
-          ],
+              const SizedBox(height: 24),
+              const Text(
+                'Notes',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  record.notes ?? 'No notes available.',
+                  style: const TextStyle(fontSize: 16, height: 1.5),
+                ),
+              ),
+              const SizedBox(height: 24),
+              if (record.filePath != null && record.filePath!.isNotEmpty)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          await FileService().openDecryptedFile(record.filePath!);
+                        },
+                        icon: const Icon(Icons.attach_file),
+                        label: const Text('View Attachment'),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(50),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      onPressed: () async {
+                        await FileService().shareFile(record.filePath!);
+                      },
+                      icon: const Icon(Icons.share),
+                      tooltip: 'Share File',
+                    ),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
     );

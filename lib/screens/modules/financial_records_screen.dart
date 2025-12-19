@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/all_models.dart';
 import '../../services/database_service.dart';
 import '../../services/file_service.dart';
+import '../../utils/app_styles.dart';
 
 class FinancialRecordsScreen extends StatefulWidget {
   const FinancialRecordsScreen({super.key});
@@ -38,26 +39,35 @@ class _FinancialRecordsScreenState extends State<FinancialRecordsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Financial Records')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _records.isEmpty 
-             ? const Center(child: Text('No records'))
-             : ListView.builder(
-                 itemCount: _records.length,
-                 itemBuilder: (context, index) {
-                   final r = _records[index];
-                   return Card(
-                     child: ListTile(
-                       leading: const CircleAvatar(child: Icon(Icons.account_balance)),
-                       title: Text(r.institutionName),
-                       subtitle: Text('${r.recordType}\n${r.accountNumber ?? ""}'),
-                       isThreeLine: true,
-                       trailing: const Icon(Icons.edit),
-                       onTap: () => _showForm(r),
-                     ),
-                   );
-                 },
-               ),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _records.isEmpty 
+               ? const Center(child: Text('No records'))
+               : ListView.builder(
+                   itemCount: _records.length,
+                   itemBuilder: (context, index) {
+                     final r = _records[index];
+                     return Card(
+                       elevation: 2,
+                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                       child: ListTile(
+                         leading: CircleAvatar(
+                           backgroundColor: Colors.green.withOpacity(0.1),
+                           child: const Icon(Icons.account_balance, color: Colors.green),
+                         ),
+                         title: Text(r.institutionName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                         subtitle: Text('${r.recordType}\n${r.accountNumber ?? ""}'),
+                         isThreeLine: true,
+                         trailing: const Icon(Icons.edit, size: 20),
+                         onTap: () => _showForm(r),
+                       ),
+                     );
+                   },
+                 ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(),
         child: const Icon(Icons.add),
@@ -126,71 +136,83 @@ class _FinancialFormState extends State<_FinancialForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.record == null ? 'Add Financial Record' : 'Edit Record')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _instCtrl,
-                decoration: const InputDecoration(labelText: 'Institution Name'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _type,
-                items: ['Bank Account', 'Credit Card', 'Loan', 'Insurance', 'Tax', 'Investment']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                onChanged: (v) => setState(() => _type = v!),
-                decoration: const InputDecoration(labelText: 'Type'),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _accCtrl,
-                decoration: const InputDecoration(labelText: 'Account/Policy Number'),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _noteCtrl,
-                decoration: const InputDecoration(labelText: 'Notes'),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              if (_filePath != null) ...[
-                 const Center(child: Text('Document Attached', style: TextStyle(color: Colors.green))),
-                 Row(
-                   mainAxisAlignment: MainAxisAlignment.center,
-                   children: [
-                     TextButton.icon(
-                       onPressed: () async {
-                         await FileService().openDecryptedFile(_filePath!);
-                       }, 
-                       icon: const Icon(Icons.remove_red_eye),
-                       label: const Text('View Document'),
-                     ),
-                     TextButton.icon(
-                       onPressed: () async {
-                         await FileService().shareFile(_filePath!);
-                       },
-                       icon: const Icon(Icons.share),
-                       label: const Text('Share'),
-                     ),
-                   ],
-                 ),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        height: double.infinity,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _instCtrl,
+                  decoration: const InputDecoration(labelText: 'Institution Name', border: OutlineInputBorder()),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _type,
+                  items: ['Bank Account', 'Credit Card', 'Loan', 'Insurance', 'Tax', 'Investment']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                  onChanged: (v) => setState(() => _type = v!),
+                  decoration: const InputDecoration(labelText: 'Type', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _accCtrl,
+                  decoration: const InputDecoration(labelText: 'Account/Policy Number', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _noteCtrl,
+                  decoration: const InputDecoration(labelText: 'Notes', border: OutlineInputBorder()),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                if (_filePath != null) ...[
+                   const Center(child: Text('Document Attached', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold))),
+                   Row(
+                     mainAxisAlignment: MainAxisAlignment.center,
+                     children: [
+                       TextButton.icon(
+                         onPressed: () async {
+                           await FileService().openDecryptedFile(_filePath!);
+                         }, 
+                         icon: const Icon(Icons.remove_red_eye),
+                         label: const Text('View Document'),
+                       ),
+                       TextButton.icon(
+                         onPressed: () async {
+                           await FileService().shareFile(_filePath!);
+                         },
+                         icon: const Icon(Icons.share),
+                         label: const Text('Share'),
+                       ),
+                     ],
+                   ),
+                ],
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _pickFile,
+                    icon: const Icon(Icons.attach_file),
+                    label: Text(_filePath == null ? 'Attach Document' : 'Change Document'),
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _save,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Save'),
+                )
               ],
-              OutlinedButton.icon(
-                onPressed: _pickFile,
-                icon: const Icon(Icons.attach_file),
-                label: Text(_filePath == null ? 'Attach Document' : 'Change Document'),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-                child: const Text('Save'),
-              )
-            ],
+            ),
           ),
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../services/auth_service.dart';
 import 'login_screen.dart';
 import 'setup_screen.dart';
+import '../utils/app_styles.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -43,15 +44,19 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        width: double.infinity,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(
-              'assets/images/logo.svg',
-              width: 150,
-              height: 150,
+            Hero(
+              tag: 'logo',
+              child: SvgPicture.asset(
+                'assets/images/logo.svg',
+                width: 150,
+                height: 150,
+              ),
             ),
             const SizedBox(height: 24),
             const Text(
@@ -60,8 +65,11 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: Colors.blueAccent,
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
               ),
             ),
+            const SizedBox(height: 40),
+            const CircularProgressIndicator(strokeWidth: 2),
           ],
         ),
       ),

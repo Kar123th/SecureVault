@@ -3,6 +3,7 @@ import '../../services/database_service.dart';
 import '../../models/medical_record_model.dart';
 import 'medical_record_form_screen.dart';
 import 'medical_record_detail_screen.dart';
+import '../../utils/app_styles.dart';
 
 class MedicalRecordsScreen extends StatefulWidget {
   const MedicalRecordsScreen({super.key});
@@ -70,46 +71,51 @@ class _MedicalRecordsScreenState extends State<MedicalRecordsScreen> {
       appBar: AppBar(
         title: const Text('Medical Records'),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _records.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.medical_services_outlined,
-                          size: 64, color: Colors.grey[400]),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No medical records yet',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 16),
-                      ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: _records.length,
-                  itemBuilder: (context, index) {
-                    final record = _records[index];
-                    return Card(
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.red[100],
-                          child: Icon(
-                            _getIconForType(record.recordType),
-                            color: Colors.red,
-                          ),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _records.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.medical_services_outlined,
+                            size: 64, color: Colors.grey[400]),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No medical records yet',
+                          style: TextStyle(color: Colors.grey[600], fontSize: 16),
                         ),
-                        title: Text(record.title),
-                        subtitle: Text(
-                            '${record.date.day}/${record.date.month}/${record.date.year} • ${record.doctorName ?? "No Doctor"}'),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: () => _navigateToDetail(record),
-                      ),
-                    );
-                  },
-                ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: _records.length,
+                    itemBuilder: (context, index) {
+                      final record = _records[index];
+                      return Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.red[100],
+                            child: Icon(
+                              _getIconForType(record.recordType),
+                              color: Colors.red,
+                            ),
+                          ),
+                          title: Text(record.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text(
+                              '${record.date.day}/${record.date.month}/${record.date.year} • ${record.doctorName ?? "No Doctor"}'),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () => _navigateToDetail(record),
+                        ),
+                      );
+                    },
+                  ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAdd,
         backgroundColor: Colors.redAccent,

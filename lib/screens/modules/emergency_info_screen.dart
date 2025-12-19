@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/all_models.dart';
 import '../../services/database_service.dart';
+import '../../utils/app_styles.dart';
 
 class EmergencyInfoScreen extends StatefulWidget {
   const EmergencyInfoScreen({super.key});
@@ -37,25 +38,34 @@ class _EmergencyInfoScreenState extends State<EmergencyInfoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Emergency Info')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _records.isEmpty
-              ? const Center(child: Text('No emergency info'))
-              : ListView.builder(
-                  itemCount: _records.length,
-                  itemBuilder: (context, index) {
-                    final r = _records[index];
-                    return Card(
-                      child: ListTile(
-                        leading: const CircleAvatar(backgroundColor: Colors.redAccent, child: Icon(Icons.medical_information, color: Colors.white)),
-                        title: Text(r.name),
-                        subtitle: Text('${r.infoType}: ${r.value}'),
-                        trailing: const Icon(Icons.edit),
-                        onTap: () => _showForm(r),
-                      ),
-                    );
-                  },
-                ),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _records.isEmpty
+                ? const Center(child: Text('No emergency info'))
+                : ListView.builder(
+                    itemCount: _records.length,
+                    itemBuilder: (context, index) {
+                      final r = _records[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.redAccent.withOpacity(0.1),
+                            child: const Icon(Icons.medical_information, color: Colors.redAccent),
+                          ),
+                          title: Text(r.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text('${r.infoType}: ${r.value}'),
+                          trailing: const Icon(Icons.edit, size: 20),
+                          onTap: () => _showForm(r),
+                        ),
+                      );
+                    },
+                  ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(),
         child: const Icon(Icons.add),
@@ -116,44 +126,51 @@ class _EmergencyFormState extends State<_EmergencyForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.record == null ? 'Add Info' : 'Edit Info')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              DropdownButtonFormField<String>(
-                value: _type,
-                items: ['Emergency Contact', 'Blood Group', 'Allergy', 'Medication', 'Doctor']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                onChanged: (v) => setState(() => _type = v!),
-                decoration: const InputDecoration(labelText: 'Type'),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: 'Name / Title (e.g. Dr. Smith)'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _valCtrl,
-                decoration: const InputDecoration(labelText: 'Value (Phone / O+ etc)'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _noteCtrl,
-                decoration: const InputDecoration(labelText: 'Notes'),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-                child: const Text('Save'),
-              )
-            ],
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        height: double.infinity,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                DropdownButtonFormField<String>(
+                  value: _type,
+                  items: ['Emergency Contact', 'Blood Group', 'Allergy', 'Medication', 'Doctor']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                  onChanged: (v) => setState(() => _type = v!),
+                  decoration: const InputDecoration(labelText: 'Type', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _nameCtrl,
+                  decoration: const InputDecoration(labelText: 'Name / Title (e.g. Dr. Smith)', border: OutlineInputBorder()),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _valCtrl,
+                  decoration: const InputDecoration(labelText: 'Value (Phone / O+ etc)', border: OutlineInputBorder()),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _noteCtrl,
+                  decoration: const InputDecoration(labelText: 'Notes', border: OutlineInputBorder()),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _save,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Save'),
+                )
+              ],
+            ),
           ),
         ),
       ),

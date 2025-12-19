@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/database_service.dart';
+import '../../utils/app_styles.dart';
 // Import all specific screens to navigate to them
 import 'modules/medical_records_screen.dart'; // We might need to make detail screens accessible generically
 import 'modules/personal_documents_screen.dart';
@@ -102,37 +103,47 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           onChanged: _performSearch,
         ),
       ),
-      body: _isSearching
-          ? const Center(child: CircularProgressIndicator())
-          : _results.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.search_off, size: 64, color: Colors.grey),
-                      const SizedBox(height: 16),
-                      Text(
-                        _searchController.text.isEmpty ? 'Type to search' : 'No matches found',
-                        style: const TextStyle(color: Colors.grey),
-                      )
-                    ],
-                  ).animate().fade().scale(),
-                )
-              : ListView.builder(
-                  itemCount: _results.length,
-                  itemBuilder: (context, index) {
-                    final item = _results[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        leading: _getIcon(item['type']),
-                        title: Text(item['title']?.toString() ?? 'Unknown'),
-                        subtitle: Text('${item['type']} • ${item['subtitle'] ?? ""}'),
-                        onTap: () => _navigateToItem(item),
-                      ),
-                    ).animate().slideX(begin: 1.0, end: 0.0, delay: Duration(milliseconds: index * 50)).fade();
-                  },
-                ),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        child: _isSearching
+            ? const Center(child: CircularProgressIndicator())
+            : _results.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.search_off, size: 64, color: Colors.grey),
+                        const SizedBox(height: 16),
+                        Text(
+                          _searchController.text.isEmpty ? 'Type to search' : 'No matches found',
+                          style: const TextStyle(color: Colors.grey),
+                        )
+                      ],
+                    ).animate().fade().scale(),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: _results.length,
+                    itemBuilder: (context, index) {
+                      final item = _results[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        child: ListTile(
+                          leading: _getIcon(item['type']),
+                          title: Text(
+                            item['title']?.toString() ?? 'Unknown',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text('${item['type']} • ${item['subtitle'] ?? ""}'),
+                          trailing: const Icon(Icons.chevron_right, size: 18),
+                          onTap: () => _navigateToItem(item),
+                        ),
+                      ).animate().slideX(begin: 1.0, end: 0.0, delay: Duration(milliseconds: index * 50)).fade();
+                    },
+                  ),
+      ),
     );
   }
 

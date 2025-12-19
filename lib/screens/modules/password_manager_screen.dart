@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/all_models.dart';
 import '../../services/database_service.dart';
+import '../../utils/app_styles.dart';
 
 class PasswordManagerScreen extends StatefulWidget {
   const PasswordManagerScreen({super.key});
@@ -48,39 +49,45 @@ class _PasswordManagerScreenState extends State<PasswordManagerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Password Manager')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _passwords.isEmpty
-              ? const Center(child: Text('No passwords saved'))
-              : ListView.builder(
-                  itemCount: _passwords.length,
-                  itemBuilder: (context, index) {
-                    final item = _passwords[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.blueAccent.withOpacity(0.1),
-                          child: const Icon(Icons.lock_outline, color: Colors.blueAccent),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _passwords.isEmpty
+                ? const Center(child: Text('No passwords saved'))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: _passwords.length,
+                    itemBuilder: (context, index) {
+                      final item = _passwords[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.blueAccent.withOpacity(0.1),
+                            child: const Icon(Icons.lock_outline, color: Colors.blueAccent),
+                          ),
+                          title: Text(item.accountName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text(item.username),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.copy, size: 20, color: Colors.blueAccent),
+                                onPressed: () => _copyToClipboard(item.password, 'Password'),
+                                tooltip: 'Copy Password',
+                              ),
+                              const Icon(Icons.chevron_right, size: 18),
+                            ],
+                          ),
+                          onTap: () => _showForm(item),
                         ),
-                        title: Text(item.accountName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(item.username),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.copy, size: 20),
-                              onPressed: () => _copyToClipboard(item.password, 'Password'),
-                              tooltip: 'Copy Password',
-                            ),
-                            const Icon(Icons.chevron_right),
-                          ],
-                        ),
-                        onTap: () => _showForm(item),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(),
         child: const Icon(Icons.add),
@@ -171,76 +178,80 @@ class _PasswordFormState extends State<_PasswordForm> {
             IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _accountCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Account Name',
-                  hintText: 'e.g. Google, Netflix, Bank',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.account_balance),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        height: double.infinity,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _accountCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Account Name',
+                    hintText: 'e.g. Google, Netflix, Bank',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.account_balance),
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
                 ),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _userCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Username / Email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person_outline),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _userCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Username / Email',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.person_outline),
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
                 ),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _passCtrl,
-                obscureText: _obscurePassword,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.key),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _passCtrl,
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.key),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    ),
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _webCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Website (Optional)',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.language),
                   ),
                 ),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _webCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Website (Optional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.language),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _notesCtrl,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Notes (Optional)',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.note_alt_outlined),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _notesCtrl,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Notes (Optional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.note_alt_outlined),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _save,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text(widget.item == null ? 'Save Password' : 'Update Password'),
                 ),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: Text(widget.item == null ? 'Save Password' : 'Update Password'),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

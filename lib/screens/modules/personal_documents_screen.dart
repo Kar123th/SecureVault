@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/all_models.dart';
 import '../../services/database_service.dart';
 import '../../services/file_service.dart';
+import '../../utils/app_styles.dart';
 
 class PersonalDocumentsScreen extends StatefulWidget {
   const PersonalDocumentsScreen({super.key});
@@ -42,26 +43,35 @@ class _PersonalDocumentsScreenState extends State<PersonalDocumentsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Personal Documents')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _documents.isEmpty
-              ? const Center(child: Text('No documents added'))
-              : ListView.builder(
-                  itemCount: _documents.length,
-                  itemBuilder: (context, index) {
-                    final doc = _documents[index];
-                    return Card(
-                      child: ListTile(
-                        leading: const CircleAvatar(child: Icon(Icons.badge)),
-                        title: Text(doc.documentName),
-                        subtitle: Text('${doc.category} \n${doc.documentNumber ?? "No Number"}'),
-                        trailing: const Icon(Icons.edit),
-                        isThreeLine: true,
-                        onTap: () => _showForm(doc),
-                      ),
-                    );
-                  },
-                ),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _documents.isEmpty
+                ? const Center(child: Text('No documents added'))
+                : ListView.builder(
+                    itemCount: _documents.length,
+                    itemBuilder: (context, index) {
+                      final doc = _documents[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.blueAccent.withOpacity(0.1),
+                            child: const Icon(Icons.badge, color: Colors.blueAccent),
+                          ),
+                          title: Text(doc.documentName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text('${doc.category} \n${doc.documentNumber ?? "No Number"}'),
+                          trailing: const Icon(Icons.edit, size: 20),
+                          isThreeLine: true,
+                          onTap: () => _showForm(doc),
+                        ),
+                      );
+                    },
+                  ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(),
         child: const Icon(Icons.add),
@@ -133,74 +143,91 @@ class _PersonalDocFormState extends State<_PersonalDocForm> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.document == null ? 'Add Document' : 'Edit Document')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _nameCtrl,
-                decoration: const InputDecoration(labelText: 'Document Name'),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _category,
-                items: ['Aadhar', 'PAN', 'Passport', 'Driving License', 'Other']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-                onChanged: (v) => setState(() => _category = v!),
-                decoration: const InputDecoration(labelText: 'Category'),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _numCtrl,
-                decoration: const InputDecoration(labelText: 'Document Number'),
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                title: Text(_expiryDate == null ? 'Select Expiry Date' : 'Expiry: ${DateFormat('yyyy-MM-dd').format(_expiryDate!)}'),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: () async {
-                  final d = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
-                  if (d != null) setState(() => _expiryDate = d);
-                },
-              ),
-              const SizedBox(height: 16),
-              if (_filePath != null) ...[
-                 const Center(child: Text('File Attached (Encrypted)', style: TextStyle(color: Colors.green))),
-                 Row(
-                   mainAxisAlignment: MainAxisAlignment.center,
-                   children: [
-                     TextButton.icon(
-                       onPressed: () async {
-                         await FileService().openDecryptedFile(_filePath!);
-                       }, 
-                       icon: const Icon(Icons.remove_red_eye),
-                       label: const Text('View File'),
-                     ),
-                     TextButton.icon(
-                       onPressed: () async {
-                         await FileService().shareFile(_filePath!);
-                       },
-                       icon: const Icon(Icons.share),
-                       label: const Text('Share'),
-                     ),
-                   ],
-                 ),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        height: double.infinity,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _nameCtrl,
+                  decoration: const InputDecoration(labelText: 'Document Name', border: OutlineInputBorder()),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _category,
+                  items: ['Aadhar', 'PAN', 'Passport', 'Driving License', 'Other']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                  onChanged: (v) => setState(() => _category = v!),
+                  decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _numCtrl,
+                  decoration: const InputDecoration(labelText: 'Document Number', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  elevation: 0,
+                  color: Colors.white.withOpacity(0.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: Colors.blue.shade100)),
+                  child: ListTile(
+                    title: Text(_expiryDate == null ? 'Select Expiry Date' : 'Expiry: ${DateFormat('yyyy-MM-dd').format(_expiryDate!)}'),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: () async {
+                      final d = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
+                      if (d != null) setState(() => _expiryDate = d);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (_filePath != null) ...[
+                   const Center(child: Text('File Attached (Encrypted)', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold))),
+                   Row(
+                     mainAxisAlignment: MainAxisAlignment.center,
+                     children: [
+                       TextButton.icon(
+                         onPressed: () async {
+                           await FileService().openDecryptedFile(_filePath!);
+                         }, 
+                         icon: const Icon(Icons.remove_red_eye),
+                         label: const Text('View File'),
+                       ),
+                       TextButton.icon(
+                         onPressed: () async {
+                           await FileService().shareFile(_filePath!);
+                         },
+                         icon: const Icon(Icons.share),
+                         label: const Text('Share'),
+                       ),
+                     ],
+                   ),
+                ],
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _pickFile,
+                    icon: const Icon(Icons.attach_file),
+                    label: Text(_filePath == null ? 'Attach Copy' : 'Change File'),
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _save,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Save Document'),
+                )
               ],
-              OutlinedButton.icon(
-                onPressed: _pickFile,
-                icon: const Icon(Icons.attach_file),
-                label: Text(_filePath == null ? 'Attach Copy' : 'Change File'),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-                child: const Text('Save Document'),
-              )
-            ],
+            ),
           ),
         ),
       ),

@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/all_models.dart';
 import '../../services/database_service.dart';
 import '../../services/notification_service.dart';
+import '../../utils/app_styles.dart';
 
 class RemindersScreen extends StatefulWidget {
   const RemindersScreen({super.key});
@@ -65,54 +66,64 @@ class _RemindersScreenState extends State<RemindersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Reminders & Alerts')),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _reminders.isEmpty
-              ? const Center(child: Text('No reminders set'))
-              : ListView.builder(
-                  itemCount: _reminders.length,
-                  itemBuilder: (context, index) {
-                    final item = _reminders[index];
-                    final isOverdue = item.reminderDate.isBefore(DateTime.now()) && !item.isCompleted;
-
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: item.isCompleted 
-                            ? Colors.green.withOpacity(0.1) 
-                            : (isOverdue ? Colors.red.withOpacity(0.1) : Colors.orange.withOpacity(0.1)),
-                          child: Icon(
-                            _getIconForCategory(item.category),
-                            color: item.isCompleted 
-                              ? Colors.green 
-                              : (isOverdue ? Colors.red : Colors.orange),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _reminders.isEmpty
+                ? const Center(child: Text('No reminders set'))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemCount: _reminders.length,
+                    itemBuilder: (context, index) {
+                      final item = _reminders[index];
+                      final isOverdue = item.reminderDate.isBefore(DateTime.now()) && !item.isCompleted;
+      
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: item.isCompleted 
+                              ? Colors.green.withOpacity(0.1) 
+                              : (isOverdue ? Colors.red.withOpacity(0.1) : Colors.orange.withOpacity(0.1)),
+                            child: Icon(
+                              _getIconForCategory(item.category),
+                              color: item.isCompleted 
+                                ? Colors.green 
+                                : (isOverdue ? Colors.red : Colors.orange),
+                            ),
                           ),
-                        ),
-                        title: Text(
-                          item.title,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: item.isCompleted ? TextDecoration.lineThrough : null,
+                          title: Text(
+                            item.title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              decoration: item.isCompleted ? TextDecoration.lineThrough : null,
+                            ),
                           ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('${item.category} • ${DateFormat('MMM dd, yyyy').format(item.reminderDate)}'),
+                              if (isOverdue)
+                                const Text('Overdue!', style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          trailing: Transform.scale(
+                            scale: 0.9,
+                            child: Checkbox(
+                              value: item.isCompleted,
+                              shape: const CircleBorder(),
+                              onChanged: (_) => _toggleCompletion(item),
+                            ),
+                          ),
+                          onTap: () => _showForm(item),
                         ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('${item.category} • ${DateFormat('MMM dd, yyyy').format(item.reminderDate)}'),
-                            if (isOverdue)
-                              const Text('Overdue!', style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        trailing: Checkbox(
-                          value: item.isCompleted,
-                          onChanged: (_) => _toggleCompletion(item),
-                        ),
-                        onTap: () => _showForm(item),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(),
         child: const Icon(Icons.add_alert),
@@ -239,61 +250,69 @@ class _ReminderFormState extends State<_ReminderForm> {
             IconButton(icon: const Icon(Icons.delete_outline), onPressed: _delete),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _titleCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Reminder Title',
-                  hintText: 'e.g. Electricity Bill Pay',
-                  border: OutlineInputBorder(),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        height: double.infinity,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _titleCtrl,
+                  decoration: const InputDecoration(
+                    labelText: 'Reminder Title',
+                    hintText: 'e.g. Electricity Bill Pay',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Required' : null,
                 ),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _category,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _category,
+                  decoration: const InputDecoration(
+                    labelText: 'Category',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                  onChanged: (v) => setState(() => _category = v!),
                 ),
-                items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                onChanged: (v) => setState(() => _category = v!),
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                title: const Text('Reminder Date'),
-                subtitle: Text(DateFormat('EEEE, MMM dd, yyyy').format(_selectedDate)),
-                trailing: const Icon(Icons.calendar_today),
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(color: Colors.grey, width: 0.5),
-                  borderRadius: BorderRadius.circular(4),
+                const SizedBox(height: 16),
+                Card(
+                  elevation: 0,
+                  color: Colors.white.withOpacity(0.5),
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: Colors.blue.shade100, width: 0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    title: const Text('Reminder Date'),
+                    subtitle: Text(DateFormat('EEEE, MMM dd, yyyy').format(_selectedDate)),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: _pickDate,
+                  ),
                 ),
-                onTap: _pickDate,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _notesCtrl,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Additional Notes',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _notesCtrl,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    labelText: 'Additional Notes',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _save,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: Text(widget.item == null ? 'Save Reminder' : 'Update Reminder'),
                 ),
-                child: Text(widget.item == null ? 'Save Reminder' : 'Update Reminder'),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

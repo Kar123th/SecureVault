@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../services/database_service.dart';
 import '../../services/file_service.dart';
+import '../../utils/app_styles.dart';
 import 'dart:io';
 
 // --- Configuration Classes ---
@@ -73,22 +74,29 @@ class _GenericModuleListScreenState<T> extends State<GenericModuleListScreen<T>>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.config.title)),
-      body: _isLoading ? const Center(child: CircularProgressIndicator()) : 
-        _items.isEmpty ? Center(child: Text('No ${widget.config.title} yet')) :
-        ListView.builder(
-          itemCount: _items.length,
-          itemBuilder: (ctx, i) {
-            final item = _items[i];
-            return Card(
-              child: ListTile(
-                title: Text(widget.config.getTitle(item)),
-                subtitle: Text(widget.config.getSubtitle(item)),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () => _navigate(item),
-              ),
-            );
-          }
-        ),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        child: _isLoading ? const Center(child: CircularProgressIndicator()) : 
+          _items.isEmpty ? Center(child: Text('No ${widget.config.title} yet')) :
+          ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: _items.length,
+            itemBuilder: (ctx, i) {
+              final item = _items[i];
+              return Card(
+                elevation: 2,
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: ListTile(
+                  title: Text(widget.config.getTitle(item), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(widget.config.getSubtitle(item)),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () => _navigate(item),
+                ),
+              );
+            }
+          ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigate(),
         child: const Icon(Icons.add),
@@ -165,73 +173,85 @@ class _GenericFormScreenState<T> extends State<GenericFormScreen<T>> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('${widget.item == null ? 'Add' : 'Edit'} ${widget.config.title}')),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            ...widget.config.fields.map((field) {
-              if (field.type == FieldType.file) {
-                 final val = _formData[field.key];
-                 return Column(
-                   children: [
-                     if (val != null) ...[
-                       Text('File attached'),
-                       TextButton(onPressed: () => _viewFile(val), child: const Text('View Decrypted')),
+      body: Container(
+        decoration: AppStyles.mainGradientDecoration,
+        height: double.infinity,
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              ...widget.config.fields.map((field) {
+                if (field.type == FieldType.file) {
+                   final val = _formData[field.key];
+                   return Column(
+                     children: [
+                       if (val != null) ...[
+                         const Text('File attached', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                         TextButton(onPressed: () => _viewFile(val), child: const Text('View Decrypted')),
+                       ],
+                       SizedBox(
+                         width: double.infinity,
+                         child: OutlinedButton.icon(
+                           onPressed: () => _pickFile(field.key),
+                           icon: const Icon(Icons.attach_file),
+                           label: Text(val == null ? 'Attach ${field.label}' : 'Change File'),
+                           style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12)),
+                         ),
+                       ),
+                       const SizedBox(height: 16),
                      ],
-                     OutlinedButton.icon(
-                       onPressed: () => _pickFile(field.key),
-                       icon: const Icon(Icons.attach_file),
-                       label: Text(val == null ? 'Attach ${field.label}' : 'Change File'),
-                     ),
-                     const SizedBox(height: 16),
-                   ],
-                 );
-              }
-              if (field.type == FieldType.dropdown) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: DropdownButtonFormField<String>(
-                    value: _formData[field.key],
-                    decoration: InputDecoration(labelText: field.label, border: const OutlineInputBorder()),
-                    items: field.options!.map((o) => DropdownMenuItem(value: o, child: Text(o))).toList(),
-                    onChanged: (v) => setState(() => _formData[field.key] = v),
-                  ),
-                );
-              }
-              if (field.type == FieldType.date) {
-                final date = DateTime.tryParse(_formData[field.key] ?? '') ?? DateTime.now();
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: InkWell(
-                    onTap: () async {
-                      final picked = await showDatePicker(context: context, initialDate: date, firstDate: DateTime(1900), lastDate: DateTime(2100));
-                      if (picked != null) setState(() => _formData[field.key] = picked.toIso8601String());
-                    },
-                    child: InputDecorator(
+                   );
+                }
+                if (field.type == FieldType.dropdown) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: DropdownButtonFormField<String>(
+                      value: _formData[field.key],
                       decoration: InputDecoration(labelText: field.label, border: const OutlineInputBorder()),
-                      child: Text(DateFormat('yyyy-MM-dd').format(date)),
+                      items: field.options!.map((o) => DropdownMenuItem(value: o, child: Text(o))).toList(),
+                      onChanged: (v) => setState(() => _formData[field.key] = v),
                     ),
+                  );
+                }
+                if (field.type == FieldType.date) {
+                  final date = DateTime.tryParse(_formData[field.key] ?? '') ?? DateTime.now();
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(context: context, initialDate: date, firstDate: DateTime(1900), lastDate: DateTime(2100));
+                        if (picked != null) setState(() => _formData[field.key] = picked.toIso8601String());
+                      },
+                      child: InputDecorator(
+                        decoration: InputDecoration(labelText: field.label, border: const OutlineInputBorder()),
+                        child: Text(DateFormat('yyyy-MM-dd').format(date)),
+                      ),
+                    ),
+                  );
+                }
+                // Text
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: TextFormField(
+                    initialValue: _formData[field.key],
+                    decoration: InputDecoration(labelText: field.label, border: const OutlineInputBorder()),
+                    onChanged: (v) => _formData[field.key] = v,
+                    validator: field.required ? (v) => v!.isEmpty ? 'Required' : null : null,
                   ),
                 );
-              }
-              // Text
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: TextFormField(
-                  initialValue: _formData[field.key],
-                  decoration: InputDecoration(labelText: field.label, border: const OutlineInputBorder()),
-                  onChanged: (v) => _formData[field.key] = v,
-                  validator: field.required ? (v) => v!.isEmpty ? 'Required' : null : null,
+              }).toList(),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _isSaving ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-              );
-            }).toList(),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _isSaving ? null : _save,
-              child: _isSaving ? const CircularProgressIndicator() : const Text('Save'),
-            )
-          ],
+                child: _isSaving ? const CircularProgressIndicator() : const Text('Save'),
+              )
+            ],
+          ),
         ),
       ),
     );
