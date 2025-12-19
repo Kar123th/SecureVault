@@ -17,7 +17,7 @@
         </intent>
     </queries>
     <application
-        android:label="secure_vault"
+        android:label="SecureVault"
         android:name="${applicationName}"
         android:requestLegacyExternalStorage="true"
         android:icon="@mipmap/launcher_icon">
